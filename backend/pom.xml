@@ -47,6 +47,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- PostgreSQL Driver for Cloud Deployments (Render / Supabase / Neon) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- H2 Database (Default resilient fallback and testing) -->
         <dependency>
             <groupId>com.h2database</groupId>

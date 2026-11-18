@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: youtube-publishing-agent
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/dashboard/stats
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONITORED_FOLDER
+        value: /app/clips
