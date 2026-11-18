@@ -13,6 +13,8 @@ services:
         value: /app/clips
       - key: AUTO_DELETE_ON_PUBLISH
         value: "true"
+      - key: YOUTUBE_REDIRECT_URI
+        value: https://youtube-publishing-agent-1.onrender.com/api/youtube/oauth2/callback
       - key: DATABASE_URL
         fromDatabase:
           name: youtube-agent-db

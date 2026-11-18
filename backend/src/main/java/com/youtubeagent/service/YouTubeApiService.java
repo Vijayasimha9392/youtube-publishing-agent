@@ -85,16 +85,24 @@ public class YouTubeApiService {
                 .orElse("");
     }
 
+    public String getEffectiveRedirectUri() {
+        return credentialRepository.findByProvider("YOUTUBE_OAUTH")
+                .map(ApiCredential::getRedirectUri)
+                .filter(uri -> uri != null && !uri.isBlank())
+                .orElse(redirectUri);
+    }
+
     public String buildAuthorizationUrl() {
         String clientId = getEffectiveClientId();
         if (clientId.isBlank()) {
             throw new IllegalStateException("Google OAuth Client ID is not configured. Please enter it in Settings.");
         }
+        String effectiveRedirect = getEffectiveRedirectUri();
 
         String scope = "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.profile";
         return "https://accounts.google.com/o/oauth2/v2/auth?" +
                 "client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
-                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+                "&redirect_uri=" + URLEncoder.encode(effectiveRedirect, StandardCharsets.UTF_8) +
                 "&response_type=code" +
                 "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8) +
                 "&access_type=offline" +
@@ -104,11 +112,12 @@ public class YouTubeApiService {
     public YouTubeAccount exchangeAuthCode(String code) throws Exception {
         String clientId = getEffectiveClientId();
         String clientSecret = getEffectiveClientSecret();
+        String effectiveRedirect = getEffectiveRedirectUri();
 
         String requestBody = "code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
                 "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8) +
-                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+                "&redirect_uri=" + URLEncoder.encode(effectiveRedirect, StandardCharsets.UTF_8) +
                 "&grant_type=authorization_code";
 
         URL tokenUrl = new URL("https://oauth2.googleapis.com/token");

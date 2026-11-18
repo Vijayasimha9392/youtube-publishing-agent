@@ -18,7 +18,7 @@ import { getYouTubeAuthUrl, disconnectYouTube, toggleSimulationMode } from '../s
 
 interface SettingsProps {
   settings: Settings | null;
-  onUpdateSettings: (settings: Partial<Settings>) => void;
+  onUpdateSettings: (settings: Partial<Settings>) => Promise<any> | void;
   onScanNow: () => void;
   isScanning: boolean;
   channelConnected: boolean;
@@ -33,6 +33,11 @@ export const SettingsPage: React.FC<SettingsProps> = ({
   channelConnected,
   channelTitle,
 }) => {
+  const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const dynamicRedirectUri = !isLocalHost && typeof window !== 'undefined'
+    ? `${window.location.origin}/api/youtube/oauth2/callback`
+    : 'http://localhost:8080/api/youtube/oauth2/callback';
+
   const [monitoredFolder, setMonitoredFolder] = useState(
     settings?.monitoredFolder || 'C:\\Users\\vijay\\OneDrive\\Desktop\\Youtube Agent\\Clips'
   );
@@ -40,7 +45,9 @@ export const SettingsPage: React.FC<SettingsProps> = ({
   const [youtubeClientId, setYoutubeClientId] = useState(settings?.youtubeClientId || '');
   const [youtubeClientSecret, setYoutubeClientSecret] = useState(settings?.youtubeClientSecret || '');
   const [youtubeRedirectUri, setYoutubeRedirectUri] = useState(
-    settings?.youtubeRedirectUri || 'http://localhost:8080/api/youtube/oauth2/callback'
+    settings?.youtubeRedirectUri && (!isLocalHost ? !settings.youtubeRedirectUri.includes('localhost') : true)
+      ? settings.youtubeRedirectUri
+      : dynamicRedirectUri
   );
   const [defaultDescriptionTemplate, setDefaultDescriptionTemplate] = useState(
     settings?.defaultDescriptionTemplate ||
@@ -58,7 +65,11 @@ export const SettingsPage: React.FC<SettingsProps> = ({
       if (settings.geminiApiKey) setGeminiApiKey(settings.geminiApiKey);
       if (settings.youtubeClientId) setYoutubeClientId(settings.youtubeClientId);
       if (settings.youtubeClientSecret) setYoutubeClientSecret(settings.youtubeClientSecret);
-      if (settings.youtubeRedirectUri) setYoutubeRedirectUri(settings.youtubeRedirectUri);
+      if (settings.youtubeRedirectUri) {
+        setYoutubeRedirectUri(!isLocalHost && settings.youtubeRedirectUri.includes('localhost') ? dynamicRedirectUri : settings.youtubeRedirectUri);
+      } else {
+        setYoutubeRedirectUri(dynamicRedirectUri);
+      }
       if (settings.defaultDescriptionTemplate) {
         setDefaultDescriptionTemplate(settings.defaultDescriptionTemplate);
       } else {
@@ -98,8 +109,8 @@ export const SettingsPage: React.FC<SettingsProps> = ({
   const handleConnectYouTube = async () => {
     try {
       setIsConnecting(true);
-      // Save credentials first
-      onUpdateSettings({
+      // Save credentials first and await persistence
+      await onUpdateSettings({
         youtubeClientId,
         youtubeClientSecret,
         youtubeRedirectUri,
