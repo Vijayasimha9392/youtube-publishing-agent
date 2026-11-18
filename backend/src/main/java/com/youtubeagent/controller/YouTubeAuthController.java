@@ -47,22 +47,22 @@ public class YouTubeAuthController {
         String target = resolveRedirectTarget(request);
 
         if (error != null) {
-            response.sendRedirect(target + "?oauth_error=" + error);
+            response.sendRedirect(target + "?tab=settings&oauth_error=" + error);
             return;
         }
 
         if (code != null) {
             try {
                 youTubeApiService.exchangeAuthCode(code);
-                response.sendRedirect(target + "?connected=true");
+                response.sendRedirect(target + "?tab=settings&connected=true");
                 return;
             } catch (Exception e) {
-                response.sendRedirect(target + "?oauth_error=" + e.getMessage());
+                response.sendRedirect(target + "?tab=settings&oauth_error=" + e.getMessage());
                 return;
             }
         }
 
-        response.sendRedirect(target);
+        response.sendRedirect(target + "?tab=settings");
     }
 
     private String resolveRedirectTarget(HttpServletRequest request) {
@@ -72,7 +72,7 @@ public class YouTubeAuthController {
             proto = request.isSecure() ? "https" : "http";
         }
         if (host != null && !host.isBlank() && !host.contains("localhost:8080")) {
-            return proto + "://" + host + "/settings";
+            return proto + "://" + host + "/";
         }
         String envRedirect = System.getenv("FRONTEND_REDIRECT_URL");
         if (envRedirect != null && !envRedirect.isBlank()) {

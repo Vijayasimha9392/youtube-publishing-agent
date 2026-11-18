@@ -86,6 +86,14 @@ export function App() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam) {
+      setCurrentTab(tabParam);
+    } else if (params.get('connected') === 'true') {
+      setCurrentTab('settings');
+    }
+
     loadData();
     // Live polling every 5 seconds for status & stats
     const interval = setInterval(loadData, 5000);
