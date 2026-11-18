@@ -157,8 +157,6 @@ export const markNotificationsAsRead = async () => {
 export const uploadVideosApi = async (files: File[]): Promise<{ success: boolean; savedFiles: number; message: string }> => {
   const formData = new FormData();
   files.forEach(f => formData.append('files', f));
-  const res = await api.post('/videos/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  const res = await axios.post('/api/videos/upload', formData);
   return res.data;
 };
