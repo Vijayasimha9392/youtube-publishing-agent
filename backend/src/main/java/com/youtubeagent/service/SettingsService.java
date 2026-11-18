@@ -63,6 +63,11 @@ public class SettingsService {
 
         dto.setSimulateUpload("true".equalsIgnoreCase(System.getProperty("SIMULATE_YOUTUBE_UPLOAD", "false")));
 
+        boolean autoDel = settingRepository.findBySettingKey("AUTO_DELETE_ON_PUBLISH")
+                .map(s -> "true".equalsIgnoreCase(s.getSettingValue()))
+                .orElseGet(() -> "true".equalsIgnoreCase(System.getenv("AUTO_DELETE_ON_PUBLISH")));
+        dto.setAutoDeleteOnPublish(autoDel);
+
         return dto;
     }
 
@@ -100,6 +105,8 @@ public class SettingsService {
         if (dto.getDefaultTags() != null) {
             saveSetting("DEFAULT_TAGS", dto.getDefaultTags(), "Default video tags");
         }
+
+        saveSetting("AUTO_DELETE_ON_PUBLISH", String.valueOf(dto.isAutoDeleteOnPublish()), "Auto-delete raw video file after publication to conserve disk space");
 
         System.setProperty("SIMULATE_YOUTUBE_UPLOAD", String.valueOf(dto.isSimulateUpload()));
         logService.info("SETTINGS", "System settings updated successfully.");

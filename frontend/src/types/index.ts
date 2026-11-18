@@ -108,6 +108,7 @@ export interface Settings {
   defaultDescriptionTemplate: string;
   defaultTags: string;
   simulateUpload: boolean;
+  autoDeleteOnPublish?: boolean;
 }
 
 export interface NotificationItem {

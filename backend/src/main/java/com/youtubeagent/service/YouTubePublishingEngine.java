@@ -32,6 +32,7 @@ public class YouTubePublishingEngine {
     private final DuplicateDetectionService duplicateDetectionService;
     private final AutomationLogService logService;
     private final NotificationRepository notificationRepository;
+    private final AutomationSettingRepository settingRepository;
 
     public YouTubePublishingEngine(PublishingQueueRepository queueRepository,
                                    VideoFileRepository videoFileRepository,
@@ -42,7 +43,8 @@ public class YouTubePublishingEngine {
                                    YouTubeApiService youTubeApiService,
                                    DuplicateDetectionService duplicateDetectionService,
                                    AutomationLogService logService,
-                                   NotificationRepository notificationRepository) {
+                                   NotificationRepository notificationRepository,
+                                   AutomationSettingRepository settingRepository) {
         this.queueRepository = queueRepository;
         this.videoFileRepository = videoFileRepository;
         this.metadataRepository = metadataRepository;
@@ -53,6 +55,7 @@ public class YouTubePublishingEngine {
         this.duplicateDetectionService = duplicateDetectionService;
         this.logService = logService;
         this.notificationRepository = notificationRepository;
+        this.settingRepository = settingRepository;
     }
 
     @PostConstruct
@@ -281,6 +284,18 @@ public class YouTubePublishingEngine {
             ));
 
             logService.info("PUBLISH", "Video successfully published: " + uploadResult.getYoutubeUrl(), videoFileId, fileHash);
+
+            // Auto-clean raw video file from disk if enabled (conserves cloud storage while preserving database history & hash)
+            if (isAutoDeleteEnabled()) {
+                try {
+                    if (diskFile.exists() && diskFile.delete()) {
+                        logService.info("STORAGE", "Auto-cleaned raw video file after publication to conserve disk space: " + diskFile.getName(), videoFileId, fileHash);
+                    }
+                } catch (Exception ex) {
+                    logService.warn("STORAGE", "Failed to clean up video file: " + ex.getMessage(), videoFileId, fileHash);
+                }
+            }
+
             return true;
         } else {
             // STEP 8: HANDLE FAILURE & RETRY
@@ -336,5 +351,15 @@ public class YouTubePublishingEngine {
                     s.setIsActive(true);
                     return scheduleRepository.save(s);
                 });
+    }
+
+    private boolean isAutoDeleteEnabled() {
+        String env = System.getenv("AUTO_DELETE_ON_PUBLISH");
+        if ("true".equalsIgnoreCase(env)) return true;
+        String prop = System.getProperty("AUTO_DELETE_ON_PUBLISH");
+        if ("true".equalsIgnoreCase(prop)) return true;
+        return settingRepository.findBySettingKey("AUTO_DELETE_ON_PUBLISH")
+                .map(s -> "true".equalsIgnoreCase(s.getSettingValue()))
+                .orElse(false);
     }
 }

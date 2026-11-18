@@ -9,6 +9,7 @@ public class SettingsDto {
     private String defaultDescriptionTemplate;
     private String defaultTags;
     private boolean simulateUpload;
+    private boolean autoDeleteOnPublish;
 
     public SettingsDto() {}
 
@@ -35,4 +36,7 @@ public class SettingsDto {
 
     public boolean isSimulateUpload() { return simulateUpload; }
     public void setSimulateUpload(boolean simulateUpload) { this.simulateUpload = simulateUpload; }
+
+    public boolean isAutoDeleteOnPublish() { return autoDeleteOnPublish; }
+    public void setAutoDeleteOnPublish(boolean autoDeleteOnPublish) { this.autoDeleteOnPublish = autoDeleteOnPublish; }
 }

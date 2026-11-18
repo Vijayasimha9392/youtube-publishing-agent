@@ -38,6 +38,7 @@ COPY --from=backend-builder /app/backend/target/*.jar app.jar
 
 ENV PORT=10000
 ENV MONITORED_FOLDER=/app/clips
+ENV AUTO_DELETE_ON_PUBLISH=true
 ENV DB_URL="jdbc:h2:file:/app/data/youtube_agent;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"
 
 EXPOSE 10000 8080

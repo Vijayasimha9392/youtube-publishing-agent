@@ -50,6 +50,7 @@ export const SettingsPage: React.FC<SettingsProps> = ({
     settings?.defaultTags || 'gta 6, rockstargames, gamingnews, gtavonline, gtacommunity, gtacars, viralata, shorts, viral'
   );
   const [simulateUpload, setSimulateUpload] = useState(settings?.simulateUpload ?? false);
+  const [autoDeleteOnPublish, setAutoDeleteOnPublish] = useState(settings?.autoDeleteOnPublish ?? true);
 
   useEffect(() => {
     if (settings) {
@@ -65,6 +66,7 @@ export const SettingsPage: React.FC<SettingsProps> = ({
       }
       if (settings.defaultTags) setDefaultTags(settings.defaultTags);
       if (settings.simulateUpload !== undefined) setSimulateUpload(settings.simulateUpload);
+      if (settings.autoDeleteOnPublish !== undefined) setAutoDeleteOnPublish(settings.autoDeleteOnPublish);
     }
   }, [settings]);
 
@@ -84,6 +86,7 @@ export const SettingsPage: React.FC<SettingsProps> = ({
       defaultDescriptionTemplate,
       defaultTags,
       simulateUpload,
+      autoDeleteOnPublish,
     });
     setSaveSuccess(true);
     setTimeout(() => {
@@ -269,6 +272,29 @@ export const SettingsPage: React.FC<SettingsProps> = ({
               <span className="text-[10px] text-slate-500 mt-1 block">
                 Supported video formats: MP4, MOV, MKV, WEBM. Currently tracking 19 finished Clips.
               </span>
+            </div>
+
+            {/* Cloud Storage Auto-Cleanup Toggle */}
+            <div className="mt-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-white flex items-center gap-2">
+                  <span>Auto-clean published video files from cloud disk</span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Automatically deletes raw .mp4 files from cloud disk after confirmed YouTube publication to prevent storage from filling up. Database records and SHA-256 duplicate protection remain intact permanently.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAutoDeleteOnPublish(!autoDeleteOnPublish)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-colors border ${
+                  autoDeleteOnPublish
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                }`}
+              >
+                {autoDeleteOnPublish ? 'ENABLED (SAFE)' : 'DISABLED'}
+              </button>
             </div>
           </div>
         </div>
