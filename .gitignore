@@ -1,0 +1,19 @@
+# Dependencies & build outputs
+node_modules/
+dist/
+target/
+*.class
+
+# Logs & temp
+*.log
+.system_generated/
+.gemini/
+
+# Sensitive / local data
+data/
+Clips/*.mp4
+Clips/*.mov
+Clips/*.mkv
+Clips/*.webm
+.env
+.env.local

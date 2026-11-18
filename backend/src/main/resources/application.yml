@@ -1,0 +1,85 @@
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+  application:
+    name: youtube-publishing-agent
+  profiles:
+    active: default
+  datasource:
+    # Embedded persistent database in MySQL compatibility mode by default
+    url: ${DB_URL:jdbc:h2:file:./data/youtube_agent;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+    username: ${DB_USER:sa}
+    password: ${DB_PASS:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  task:
+    scheduling:
+      pool:
+        size: 5
+    execution:
+      pool:
+        core-size: 5
+        max-size: 10
+
+agent:
+  folder:
+    monitored-path: ${MONITORED_FOLDER:./Clips}
+    scan-interval-seconds: 10
+    stability-wait-seconds: 2
+  publishing:
+    videos-per-interval: 2
+    interval-minutes: 60
+    start-time: "09:00"
+    end-time: "23:59"
+    timezone: "Asia/Kolkata"
+    max-daily-uploads: 20
+    auto-publishing-enabled: true
+    max-retries: 3
+    retry-delay-seconds: 300
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: gemini-2.5-flash
+  youtube:
+    client-id: ${YOUTUBE_CLIENT_ID:}
+    client-secret: ${YOUTUBE_CLIENT_SECRET:}
+    redirect-uri: ${YOUTUBE_REDIRECT_URI:http://localhost:8080/api/youtube/oauth2/callback}
+    frontend-redirect: ${FRONTEND_URL:http://localhost:5173/settings}
+
+---
+# MySQL Profile for production MySQL server
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/youtube_agent?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:root}
+    password: ${DB_PASS:root}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
