@@ -3,6 +3,7 @@ package com.youtubeagent.controller;
 import com.youtubeagent.model.YouTubeAccount;
 import com.youtubeagent.repository.YouTubeAccountRepository;
 import com.youtubeagent.service.YouTubeApiService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -41,24 +42,43 @@ public class YouTubeAuthController {
     @GetMapping("/oauth2/callback")
     public void oauth2Callback(@RequestParam(required = false) String code,
                                @RequestParam(required = false) String error,
+                               HttpServletRequest request,
                                HttpServletResponse response) throws IOException {
+        String target = resolveRedirectTarget(request);
+
         if (error != null) {
-            response.sendRedirect(frontendRedirect + "?oauth_error=" + error);
+            response.sendRedirect(target + "?oauth_error=" + error);
             return;
         }
 
         if (code != null) {
             try {
                 youTubeApiService.exchangeAuthCode(code);
-                response.sendRedirect(frontendRedirect + "?connected=true");
+                response.sendRedirect(target + "?connected=true");
                 return;
             } catch (Exception e) {
-                response.sendRedirect(frontendRedirect + "?oauth_error=" + e.getMessage());
+                response.sendRedirect(target + "?oauth_error=" + e.getMessage());
                 return;
             }
         }
 
-        response.sendRedirect(frontendRedirect);
+        response.sendRedirect(target);
+    }
+
+    private String resolveRedirectTarget(HttpServletRequest request) {
+        String host = request.getHeader("Host");
+        String proto = request.getHeader("X-Forwarded-Proto");
+        if (proto == null || proto.isBlank()) {
+            proto = request.isSecure() ? "https" : "http";
+        }
+        if (host != null && !host.isBlank() && !host.contains("localhost:8080")) {
+            return proto + "://" + host + "/settings";
+        }
+        String envRedirect = System.getenv("FRONTEND_REDIRECT_URL");
+        if (envRedirect != null && !envRedirect.isBlank()) {
+            return envRedirect;
+        }
+        return frontendRedirect;
     }
 
     @GetMapping("/status")
