@@ -50,8 +50,6 @@ export const Library: React.FC<LibraryProps> = ({ videos, onPreview, onEditMetad
       setTimeout(() => setUploadMessage(null), 5000);
     }
   };
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [sortBy, setSortBy] = useState<'date' | 'title' | 'duration' | 'size'>('date');
 
   const filtered = videos
     .filter((v) => {
